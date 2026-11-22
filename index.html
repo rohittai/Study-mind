@@ -7,26 +7,128 @@
 <style>
 *{box-sizing:border-box}
 body{
-  margin:0;background:#0b1020;color:#eef2ff;
-  font-family:Arial,sans-serif;padding:20px;
+ margin:0;background:#0b1020;color:#eee;
+ font-family:Arial,sans-serif;padding:20px
 }
 .container{max-width:650px;margin:auto}
-header{margin:15px 0 30px}
-.logo{color:#8b9dff;font-weight:bold;font-size:14px}
-h1{font-size:30px;margin:10px 0}
+header{margin:30px 0}
+.logo{color:#8b9dff;font-weight:bold}
+h1{font-size:30px}
 p{color:#aab4ce}
 .card{
  background:#151d33;border:1px solid #263451;
- border-radius:18px;padding:20px;margin:16px 0;
+ border-radius:18px;padding:20px;margin:16px 0
 }
 input,button{
- border-radius:12px;padding:14px;border:0;font-size:15px;
+ border-radius:12px;padding:14px;border:0;
+ font-size:16px
 }
 input{
- background:#0e1629;color:white;border:1px solid #31405e;
- width:100%;outline:none;
+ background:#0e1629;color:white;
+ border:1px solid #31405e;width:100%
 }
-buttondeleteTask(i);
+button{cursor:pointer;background:#7188ff;color:white}
+.add{width:100%;margin-top:10px}
+.task{
+ display:flex;align-items:center;gap:10px;
+ padding:12px 0;border-bottom:1px solid #29344d
+}
+.task span{flex:1;overflow-wrap:anywhere}
+.task button{padding:8px}
+.done{text-decoration:line-through;color:#77839d}
+#timer{text-align:center;font-size:45px;margin:20px}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<div class="logo">StudyMind</div>
+<h1>Focus on your future.</h1>
+<p>Your simple study productivity space.</p>
+</header>
 
+<div class="card">
+<h2>My Tasks</h2>
+<input id="taskInput" placeholder="Enter a study task...">
+<button class="add" onclick="addTask()">Add Task</button>
+<div id="tasks"></div>
+</div>
+
+<div class="card">
+<h2>Focus Timer</h2>
+<div id="timer">25:00</div>
+<button onclick="startTimer()">Start</button>
+<button onclick="pauseTimer()">Pause</button>
+<button onclick="resetTimer()">Reset</button>
+</div>
+
+<div class="card">
+<p>Small steps. Consistent progress.</p>
+</div>
+</div>
+
+<script>
+let tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
+let time=1500,interval=null;
+
+function save(){
+ localStorage.setItem("tasks",JSON.stringify(tasks));
+ render();
+}
+function addTask(){
+ let input=document.getElementById("taskInput");
+ if(!input.value.trim())return;
+ tasks.push({text:input.value,done:false});
+ input.value="";
+ save();
+}
+function toggleTask(i){
+ tasks[i].done=!tasks[i].done;
+ save();
+}
+function deleteTask(i){
+ tasks.splice(i,1);
+ save();
+}
+function render(){
+ let box=document.getElementById("tasks");
+ box.innerHTML="";
+ tasks.forEach((t,i)=>{
+  let div=document.createElement("div");
+  div.className="task";
+  let span=document.createElement("span");
+  span.textContent=t.text;
+  if(t.done)span.className="done";
+  let check=document.createElement("button");
+  check.textContent=t.done?"Undo":"Done";
+  check.onclick=()=>toggleTask(i);
+  let del=document.createElement("button");
+  del.textContent="Delete";
+  del.onclick=()=>deleteTask(i);
   div.append(span,check,del);
-  box.appendChild
+  box.appendChild(div);
+ });
+}
+function updateTimer(){
+ document.getElementById("timer").textContent=
+ String(Math.floor(time/60)).padStart(2,"0")+":"+
+ String(time%60).padStart(2,"0");
+}
+function startTimer(){
+ if(interval)return;
+ interval=setInterval(()=>{
+  if(time>0){time--;updateTimer();}
+  else{pauseTimer();alert("Focus session complete!");}
+ },1000);
+}
+function pauseTimer(){
+ clearInterval(interval);interval=null;
+}
+function resetTimer(){
+ pauseTimer();time=1500;updateTimer();
+}
+render();
+updateTimer();
+</script>
+</body>
+</html>
